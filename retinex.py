@@ -2,7 +2,7 @@ import numpy as np
 import cv2
 
 def singleScaleRetinex(img, sigma):
-
+    # 应用高斯模板加速运算
     retinex = np.log10(img) - np.log10(cv2.GaussianBlur(img, (0, 0), sigma))
 
     return retinex
@@ -12,7 +12,7 @@ def multiScaleRetinex(img, sigma_list):
     retinex = np.zeros_like(img)
     for sigma in sigma_list:
         retinex += singleScaleRetinex(img, sigma)
-
+    # 计算多尺度平均
     retinex = retinex / len(sigma_list)
 
     return retinex
@@ -20,7 +20,7 @@ def multiScaleRetinex(img, sigma_list):
 def colorRestoration(img, alpha, beta):
 
     img_sum = np.sum(img, axis=2, keepdims=True)
-
+    # 计算色彩还原通道
     color_restoration = beta * (np.log10(alpha * img) - np.log10(img_sum))
 
     return color_restoration
@@ -60,6 +60,7 @@ def MSRCR(img, sigma_list, G, b, alpha, beta, low_clip, high_clip):
 
     return img_msrcr
 
+# 算法实现参照 [Multiscale Retinex] (http://www.ipol.im/pub/art/2014/107/)
 def automatedMSRCR(img, sigma_list):
 
     img = np.float64(img) + 1.0
@@ -92,10 +93,11 @@ def automatedMSRCR(img, sigma_list):
         
     return img_retinex
 
+# 算法实现参照 [Multiscale Retinex] (http://www.ipol.im/pub/art/2014/107/)
 def MSRCP(img, sigma_list, low_clip, high_clip):
 
     img = np.float64(img) + 1.0
-
+    # 计算强度层
     intensity = np.sum(img, axis=2) / img.shape[2]    
 
     retinex = multiScaleRetinex(intensity, sigma_list)
